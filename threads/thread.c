@@ -223,7 +223,7 @@ thread_create (const char *name, int priority,
 	/* Add to run queue. */
 	thread_unblock (t);
 	/* Yield if new thread has higher priority. */
-	printf("Creating thread: %s with priority: %d\n", t->name, t->priority);
+	printf("Creating %s thread\n", t->name);
   if (priority > thread_current ()->priority)
     thread_yield ();
 
