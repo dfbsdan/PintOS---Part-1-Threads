@@ -25,6 +25,10 @@
    Do not modify this value. */
 #define THREAD_BASIC 0xd42df210
 
+/* Compares the PRIORITY values of two given threads. Returns true if
+   a's is less than b's, false otherwise. */
+static list_less_func compare_priorities;
+
 /* Compares the ALARM values of two given threads. Returns true if
    a's is less than b's, false otherwise. */
 static list_less_func compare_alarms;
@@ -490,10 +494,32 @@ init_thread (struct thread *t, const char *name, int priority) {
    idle_thread. */
 static struct thread *
 next_thread_to_run (void) {
+	struct thread *next_thread;
+
 	if (list_empty (&ready_list))
 		return idle_thread;
-	else
-		return list_entry (list_pop_front (&ready_list), struct thread, elem);
+	else {
+		//Choose the thread with Highest priority in the ready_list
+		next_thread = list_entry (
+				list_max (&ready_list, &compare_priorities, NULL),
+        struct thread, elem);
+		list_remove (&next_thread->elem);
+		return next_thread;
+	}
+}
+
+/* Compares the PRIORITY values of two given threads. Returns true if
+   a's is less than b's, false otherwise. */
+static bool
+compare_priorities (const struct list_elem *a, const struct list_elem *b,
+		void *aux UNUSED) {
+  ASSERT (a && b);
+	
+  struct thread *aThr, *bThr;
+  aThr = list_entry (a, struct thread, elem);
+  bThr = list_entry (b, struct thread, elem);
+  ASSERT (is_thread (aThr) && is_thread (bThr));
+  return aThr->priority < bThr->priority;
 }
 
 /* Use iretq to launch the thread */
