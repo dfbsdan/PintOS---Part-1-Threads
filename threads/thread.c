@@ -223,7 +223,6 @@ thread_create (const char *name, int priority,
 	/* Add to run queue. */
 	thread_unblock (t);
 	/* Yield if new thread has higher priority. */
-	printf("Creating %s thread\n", t->name);
   if (priority > thread_current ()->priority)
     thread_yield ();
 
@@ -264,6 +263,10 @@ thread_unblock (struct thread *t) {
 	list_push_back (&ready_list, &t->elem);
 	t->status = THREAD_READY;
 	intr_set_level (old_level);
+	/*
+	if (t->priority > thread_current ()->priority)
+		thread_yield ();
+	*/
 }
 
 /* Adds current thread to the sleep_list and blocks it.
