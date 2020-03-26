@@ -11,6 +11,7 @@
 #include "threads/synch.h"
 #include "threads/vaddr.h"
 #include "intrinsic.h"
+#include "devices/timer.h"
 #ifdef USERPROG
 #include "userprog/process.h"
 #endif
@@ -70,6 +71,7 @@ static void init_thread (struct thread *, const char *name, int priority);
 static void do_schedule(int status);
 static void schedule (void);
 static tid_t allocate_tid (void);
+static void wake_up_threads (void);
 
 /* Returns true if T appears to point to a valid thread. */
 #define is_thread(t) ((t) != NULL && (t)->magic == THREAD_MAGIC)
@@ -158,6 +160,7 @@ thread_tick (void) {
 	else
 		kernel_ticks++;
 
+	wake_up_threads ();
 	/* Enforce preemption. */
 	if (++thread_ticks >= TIME_SLICE)
 		intr_yield_on_return ();
@@ -385,6 +388,29 @@ compare_alarms (const struct list_elem *a, const struct list_elem *b,
   bThr = list_entry (b, struct thread, elem);
   ASSERT (is_thread (aThr) && is_thread (bThr));
   return aThr->alarm < bThr->alarm;
+}
+
+/* Wakes up ONE thread from sleep_list (if it is not empty).
+   The one with lowest ALARM value is chosen (i.e. the one
+   that has to wake up earlier). In case there is more than one
+   with such value, chooses the one put to sleep first. */
+static void
+wake_up_threads (void) {
+	enum intr_level old_level;
+  struct thread *t;
+	int64_t ticks;
+
+	old_level = intr_disable ();
+	ticks = timer_ticks ();
+  while (!list_empty (&sleep_list)) {
+    t = list_entry (list_front (&sleep_list), struct thread, elem);
+    if (t->alarm > ticks)
+      break;
+		printf("Waking up thread: %s\n", t->name);
+    list_remove (&t->elem);
+    thread_unblock (t);
+  }
+	intr_set_level (old_level);
 }
 
 /* Idle thread.  Executes when no other thread is ready to run.
