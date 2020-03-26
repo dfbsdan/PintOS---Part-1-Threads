@@ -259,12 +259,11 @@ thread_unblock (struct thread *t) {
 	ASSERT (t->status == THREAD_BLOCKED);
 	list_push_back (&ready_list, &t->elem);
 	t->status = THREAD_READY;
-
-	intr_set_level (old_level);
 	//Yield if the unblocked thread has greater priority
 	if (t->priority > thread_current ()->priority
 			&& thread_current () != idle_thread)
     thread_yield ();
+	intr_set_level (old_level);
 }
 
 /* Adds current thread to the sleep_list and blocks it.
