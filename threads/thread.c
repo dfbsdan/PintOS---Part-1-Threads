@@ -24,6 +24,10 @@
    Do not modify this value. */
 #define THREAD_BASIC 0xd42df210
 
+/* Compares the ALARM values of two given threads. Returns true if
+   a's is less than b's, false otherwise. */
+static list_less_func compare_alarms;
+
 /* List of processes in THREAD_BLOCKED state, i.e., those that
    are waiting for something to be activated (alarms). */
 static struct list sleep_list;
@@ -358,6 +362,21 @@ int
 thread_get_recent_cpu (void) {
 	/* TODO: Your implementation goes here */
 	return 0;
+}
+
+/* Compares the ALARM values of two given threads. Returns true if
+   a's is less than b's, false otherwise. */
+static bool
+compare_alarms (const struct list_elem *a, const struct list_elem *b,
+		void *aux UNUSED) {
+	struct thread *aThr, *bThr;
+	
+	ASSERT (a && b);
+
+  aThr = list_entry (a, struct thread, elem);
+  bThr = list_entry (b, struct thread, elem);
+  ASSERT (is_thread (aThr) && is_thread (bThr));
+  return aThr->alarm < bThr->alarm;
 }
 
 /* Idle thread.  Executes when no other thread is ready to run.
