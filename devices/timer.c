@@ -92,9 +92,9 @@ void
 timer_sleep (int64_t ticks) {
 	int64_t start = timer_ticks ();
 
-	ASSERT (intr_get_level () == INTR_ON);
-	while (timer_elapsed (start) < ticks)
-		thread_yield ();
+	intr_disable ();
+	thread_current ()->alarm = start + ticks;
+	thread_block ();
 }
 
 /* Suspends execution for approximately MS milliseconds. */

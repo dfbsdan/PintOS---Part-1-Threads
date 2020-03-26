@@ -24,6 +24,10 @@
    Do not modify this value. */
 #define THREAD_BASIC 0xd42df210
 
+/* List of processes in THREAD_BLOCKED state, i.e., those that
+   are waiting for something to be activated (alarms). */
+static struct list sleep_list;
+
 /* List of processes in THREAD_READY state, that is, processes
    that are ready to run but not actually running. */
 static struct list ready_list;
@@ -218,9 +222,18 @@ thread_create (const char *name, int priority,
    primitives in synch.h. */
 void
 thread_block (void) {
+	struct thread *t;
+
 	ASSERT (!intr_context ());
 	ASSERT (intr_get_level () == INTR_OFF);
-	thread_current ()->status = THREAD_BLOCKED;
+
+	t = thread_current ();
+	ASSERT (t->status == THREAD_READY);
+	printf("Removing thread: %s from ready_list of size: %d\n", t->name, (int)list_size(&ready_list));
+	list_remove (&t->elem);
+	printf("Thread: %s removed from ready_list of new size: %d\n", t->name, (int)list_size(&ready_list));
+	list_insert_ordered (&sleep_list, &t->elem, &compare_alarms, NULL);
+	t->status = THREAD_BLOCKED;
 	schedule ();
 }
 
