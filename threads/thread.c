@@ -227,20 +227,11 @@ thread_create (const char *name, int priority,
    primitives in synch.h. */
 void
 thread_block (void) {
-	struct thread *t;
-
 	ASSERT (!intr_context ());
-	ASSERT (intr_get_level () == INTR_OFF);
+  ASSERT (intr_get_level () == INTR_OFF);
 
-	t = thread_current ();
-	//printf("Removing thread: %s from ready_list of size: %d\n", t->name, (int)list_size(&ready_list));
-	//list_remove (&t->elem);
-	//printf("Thread: %s removed from ready_list of new size: %d\n", t->name, (int)list_size(&ready_list));
-	printf("Adding thread: %s to sleep_list of size: %d\n", t->name, (int)list_size(&sleep_list));
-	list_insert_ordered (&sleep_list, &t->elem, &compare_alarms, NULL);
-	printf("Thread: %s added to sleep_list of new size: %d\n", t->name, (int)list_size(&sleep_list));
-	t->status = THREAD_BLOCKED;
-	schedule ();
+  thread_current ()->status = THREAD_BLOCKED;
+  schedule ();
 }
 
 /* Transitions a blocked thread T to the ready-to-run state.
@@ -262,6 +253,21 @@ thread_unblock (struct thread *t) {
 	list_push_back (&ready_list, &t->elem);
 	t->status = THREAD_READY;
 	intr_set_level (old_level);
+}
+
+/* Adds current thread to the sleep_list and blocks it.
+   Interrupts must be turned off. */
+void
+thread_sleep (void) {
+	struct thread *t;
+
+	ASSERT (intr_get_level () == INTR_OFF);
+
+	t = thread_current ();
+	printf("Adding thread: %s to sleep_list of size: %d\n", t->name, (int)list_size(&sleep_list));
+	list_insert_ordered (&sleep_list, &t->elem, &compare_alarms, NULL);
+	printf("Thread: %s added to sleep_list of new size: %d\n", t->name, (int)list_size(&sleep_list));
+	thread_block ();
 }
 
 /* Returns the name of the running thread. */
