@@ -262,14 +262,10 @@ thread_unblock (struct thread *t) {
    Interrupts must be turned off. */
 void
 thread_sleep (void) {
-	struct thread *t;
-
 	ASSERT (intr_get_level () == INTR_OFF);
 
-	t = thread_current ();
-	printf("Adding thread: %s to sleep_list of size: %d\n", t->name, (int)list_size(&sleep_list));
-	list_insert_ordered (&sleep_list, &t->elem, &compare_alarms, NULL);
-	printf("Thread: %s added to sleep_list of new size: %d\n", t->name, (int)list_size(&sleep_list));
+	list_insert_ordered (&sleep_list, &thread_current ()->elem,
+			&compare_alarms, NULL);
 	thread_block ();
 }
 
@@ -390,10 +386,8 @@ compare_alarms (const struct list_elem *a, const struct list_elem *b,
   return aThr->alarm < bThr->alarm;
 }
 
-/* Wakes up ONE thread from sleep_list (if it is not empty).
-   The one with lowest ALARM value is chosen (i.e. the one
-   that has to wake up earlier). In case there is more than one
-   with such value, chooses the one put to sleep first. */
+/* Wakes up those threads from sleep_list that have finished sleeping
+	 (i.e. the alarm has run off). */
 static void
 wake_up_threads (void) {
 	enum intr_level old_level;
@@ -406,7 +400,6 @@ wake_up_threads (void) {
     t = list_entry (list_front (&sleep_list), struct thread, elem);
     if (t->alarm > ticks)
       break;
-		printf("Waking up thread: %s\n", t->name);
     list_remove (&t->elem);
     thread_unblock (t);
   }
