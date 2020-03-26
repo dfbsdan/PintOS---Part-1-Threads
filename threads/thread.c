@@ -259,9 +259,9 @@ thread_unblock (struct thread *t) {
 	ASSERT (t->status == THREAD_BLOCKED);
 	list_push_back (&ready_list, &t->elem);
 	t->status = THREAD_READY;
+	intr_set_level (old_level);
 	if (t->priority > thread_current ()->priority)
 		thread_yield ();
-	intr_set_level (old_level);
 }
 
 /* Adds current thread to the sleep_list and blocks it.
@@ -514,7 +514,7 @@ static bool
 compare_priorities (const struct list_elem *a, const struct list_elem *b,
 		void *aux UNUSED) {
   ASSERT (a && b);
-	
+
   struct thread *aThr, *bThr;
   aThr = list_entry (a, struct thread, elem);
   bThr = list_entry (b, struct thread, elem);
