@@ -232,7 +232,6 @@ thread_block (void) {
 	ASSERT (intr_get_level () == INTR_OFF);
 
 	t = thread_current ();
-	ASSERT (t->status == THREAD_READY);
 	printf("Removing thread: %s from ready_list of size: %d\n", t->name, (int)list_size(&ready_list));
 	list_remove (&t->elem);
 	printf("Thread: %s removed from ready_list of new size: %d\n", t->name, (int)list_size(&ready_list));
@@ -370,7 +369,7 @@ static bool
 compare_alarms (const struct list_elem *a, const struct list_elem *b,
 		void *aux UNUSED) {
 	struct thread *aThr, *bThr;
-	
+
 	ASSERT (a && b);
 
   aThr = list_entry (a, struct thread, elem);
