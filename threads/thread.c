@@ -233,10 +233,12 @@ thread_block (void) {
 	ASSERT (intr_get_level () == INTR_OFF);
 
 	t = thread_current ();
-	printf("Removing thread: %s from ready_list of size: %d\n", t->name, (int)list_size(&ready_list));
-	list_remove (&t->elem);
-	printf("Thread: %s removed from ready_list of new size: %d\n", t->name, (int)list_size(&ready_list));
+	//printf("Removing thread: %s from ready_list of size: %d\n", t->name, (int)list_size(&ready_list));
+	//list_remove (&t->elem);
+	//printf("Thread: %s removed from ready_list of new size: %d\n", t->name, (int)list_size(&ready_list));
+	printf("Adding thread: %s to sleep_list of size: %d\n", t->name, (int)list_size(&sleep_list));
 	list_insert_ordered (&sleep_list, &t->elem, &compare_alarms, NULL);
+	printf("Thread: %s added to sleep_list of new size: %d\n", t->name, (int)list_size(&sleep_list));
 	t->status = THREAD_BLOCKED;
 	schedule ();
 }
