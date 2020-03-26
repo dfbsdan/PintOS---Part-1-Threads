@@ -32,10 +32,6 @@
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 
-/* Compares the PRIORITY values of two given threads. Returns true if
-   a's is less than b's, false otherwise. */
-static list_less_func compare_priorities;
-
 /* Initializes semaphore SEMA to VALUE.  A semaphore is a
    nonnegative integer along with two atomic operators for
    manipulating it:
@@ -70,8 +66,7 @@ sema_down (struct semaphore *sema) {
 
 	old_level = intr_disable ();
 	while (sema->value == 0) {
-		list_insert_ordered (&sema->waiters, &thread_current ()->elem,
-				&compare_priorities, NULL);
+		list_push_back (&sema->waiters, &thread_current ()->elem);
 		thread_block ();
 	}
 	sema->value--;
@@ -104,7 +99,7 @@ sema_try_down (struct semaphore *sema) {
 }
 
 /* Up or "V" operation on a semaphore.  Increments SEMA's value
-   and wakes up the thread of greatest priority waiting for SEMA, if any.
+   and wakes up one thread of those waiting for SEMA, if any.
 
    This function may be called from an interrupt handler. */
 void
@@ -115,11 +110,10 @@ sema_up (struct semaphore *sema) {
 
 	old_level = intr_disable ();
 	if (!list_empty (&sema->waiters))
-		thread_unblock (list_entry (list_pop_back (&sema->waiters),
+		thread_unblock (list_entry (list_pop_front (&sema->waiters),
 					struct thread, elem));
 	sema->value++;
 	intr_set_level (old_level);
-	//thread_yield ();
 }
 
 static void sema_test_helper (void *sema_);
@@ -156,21 +150,7 @@ sema_test_helper (void *sema_) {
 		sema_up (&sema[1]);
 	}
 }
-
-/* Compares the PRIORITY values of two given threads. Returns true if
-   a's is less than b's, false otherwise. */
-static bool
-compare_priorities (const struct list_elem *a, const struct list_elem *b,
-		void *aux UNUSED) {
-  ASSERT (a && b);
-
-  struct thread *aThr, *bThr;
-  aThr = list_entry (a, struct thread, elem);
-  bThr = list_entry (b, struct thread, elem);
-
-  return aThr->priority < bThr->priority;
-}
-
+
 /* Initializes LOCK.  A lock can be held by at most a single
    thread at any given time.  Our locks are not "recursive", that
    is, it is an error for the thread currently holding a lock to
