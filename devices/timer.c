@@ -95,6 +95,7 @@ timer_sleep (int64_t ticks) {
 	intr_disable ();
 	thread_current ()->alarm = start + ticks;
 	thread_sleep ();
+	intr_enable ();
 }
 
 /* Suspends execution for approximately MS milliseconds. */
