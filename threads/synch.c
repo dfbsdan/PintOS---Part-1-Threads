@@ -118,7 +118,6 @@ sema_up (struct semaphore *sema) {
 		t = list_entry (list_max (&sema->waiters, &compare_priorities, NULL),
 				struct thread, elem);
 		list_remove (&t->elem);
-		printf("Waking up thread: %s with prt: %d\n", t->name, t->priority);
 		thread_unblock (t);
 	}
 	sema->value++;
