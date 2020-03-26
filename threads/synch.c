@@ -71,7 +71,6 @@ sema_down (struct semaphore *sema) {
 	old_level = intr_disable ();
 	while (sema->value == 0) {
 		list_push_back (&sema->waiters, &thread_current ()->elem);
-		printf("Adding thread: %s with prt: %d to sema waiters, new list size: %d\n", thread_current ()->name, thread_current ()->priority, (int)list_size(&sema->waiters));
 		thread_block ();
 	}
 	sema->value--;
