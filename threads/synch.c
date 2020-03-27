@@ -307,10 +307,10 @@ cond_wait (struct condition *cond, struct lock *lock) {
 
 	sema_init (&waiter.semaphore, 0);
 	////////////////////////////////////////////////////////////////////////TESTING
-	list_insert_ordered (&cond->waiters, &waiter.elem,
-			&compare_priorities_cond, NULL);
+	//list_insert_ordered (&cond->waiters, &waiter.elem,
+	//		&compare_priorities_cond, NULL);
 	///////////////////////////////////////////////////////////////////////////////
-	//list_push_back (&cond->waiters, &waiter.elem);
+	list_push_back (&cond->waiters, &waiter.elem);
 	lock_release (lock);
 	sema_down (&waiter.semaphore);
 	lock_acquire (lock);
@@ -332,8 +332,14 @@ cond_signal (struct condition *cond, struct lock *lock UNUSED) {
 
 	if (!list_empty (&cond->waiters))
 		//////////////////////////////////////////////////////////////////////TESTING
-		sema_up (&list_entry (list_pop_back (&cond->waiters),
-				struct semaphore_elem, elem)->semaphore);
+		//sema_up (&list_entry (list_pop_back (&cond->waiters),
+		//		struct semaphore_elem, elem)->semaphore);
+		{
+			struct semaphore_elem * sema_elem;
+			sema_elem = list_entry (list_max (&cond->waiters, &compare_priorities_cond, NULL), struct semaphore_elem, elem);
+			list_remove (&sema_elem->elem);
+			sema_up (&sema_elem->semaphore);
+		}
 		/////////////////////////////////////////////////////////////////////////////
 		//sema_up (&list_entry (list_pop_front (&cond->waiters),
 		//			struct semaphore_elem, elem)->semaphore);
