@@ -36,6 +36,10 @@
    a's is less than b's, false otherwise. */
 static list_less_func compare_priorities;
 
+/* Compares priorities between two threads in a cond waiting list.
+   Returns true if a's is less than b's, false otherwise. */
+static list_less_func compare_priorities_cond;
+
 /* Initializes semaphore SEMA to VALUE.  A semaphore is a
    nonnegative integer along with two atomic operators for
    manipulating it:
@@ -104,7 +108,8 @@ sema_try_down (struct semaphore *sema) {
 }
 
 /* Up or "V" operation on a semaphore.  Increments SEMA's value
-   and wakes up one thread of those waiting for SEMA, if any.
+   and wakes up the thread with greatest priority waiting for SEMA, if
+	 any.
 
    This function may be called from an interrupt handler. */
 void
@@ -301,7 +306,11 @@ cond_wait (struct condition *cond, struct lock *lock) {
 	ASSERT (lock_held_by_current_thread (lock));
 
 	sema_init (&waiter.semaphore, 0);
-	list_push_back (&cond->waiters, &waiter.elem);
+	////////////////////////////////////////////////////////////////////////TESTING
+	list_insert_ordered (&cond->waiters, &waiter.elem,
+			&compare_priorities_cond, NULL);
+	///////////////////////////////////////////////////////////////////////////////
+	//list_push_back (&cond->waiters, &waiter.elem);
 	lock_release (lock);
 	sema_down (&waiter.semaphore);
 	lock_acquire (lock);
@@ -322,8 +331,12 @@ cond_signal (struct condition *cond, struct lock *lock UNUSED) {
 	ASSERT (lock_held_by_current_thread (lock));
 
 	if (!list_empty (&cond->waiters))
-		sema_up (&list_entry (list_pop_front (&cond->waiters),
-					struct semaphore_elem, elem)->semaphore);
+		//////////////////////////////////////////////////////////////////////TESTING
+		sema_up (&list_entry (list_pop_back (&cond->waiters),
+				struct semaphore_elem, elem)->semaphore);
+		/////////////////////////////////////////////////////////////////////////////
+		//sema_up (&list_entry (list_pop_front (&cond->waiters),
+		//			struct semaphore_elem, elem)->semaphore);
 }
 
 /* Wakes up all threads, if any, waiting on COND (protected by
@@ -339,4 +352,24 @@ cond_broadcast (struct condition *cond, struct lock *lock) {
 
 	while (!list_empty (&cond->waiters))
 		cond_signal (cond, lock);
+}
+
+/* Compares priorities between two threads in a cond waiting list.
+   Returns true if a's is less than b's, false otherwise. */
+static bool
+compare_priorities_cond (const struct list_elem *a,
+		const struct list_elem *b, void *aux UNUSED) {
+	struct semaphore_elem *aSema, *bSema;
+	struct thread *aThr, *bThr;
+
+	ASSERT (a && b);
+
+	aSema = list_entry (a, struct semaphore_elem, elem);
+  bSema = list_entry (b, struct semaphore_elem, elem);
+  aThr = list_entry (list_front (&aSema->semaphore.waiters),
+			struct thread, elem);
+  bThr = list_entry (list_front (&bSema->semaphore.waiters),
+			struct thread, elem);
+
+  return aThr->priority < bThr->priority;
 }
