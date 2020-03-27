@@ -421,7 +421,7 @@ get_max_donator (void) {
 
 	max_donator = curr = thread_current ();
 	lock_list = &curr->locks_held;
-  if (!list_empty (lock_list))) {
+  if (!list_empty (lock_list)) {
 		/* Traverse all locks inside current thread's locks_held list. */
   	for (lock = list_front (lock_list);
 				lock != list_end (lock_list);
