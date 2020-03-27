@@ -348,8 +348,12 @@ thread_set_priority (int new_priority) {
 	curr = thread_current ();
 	old_priority = curr->priority;
 	/* Keep the priority inside the valid range. */
-	curr->priority = (new_priority > PRI_MAX)? PRI_MAX:
-			(new_priority < PRI_MIN)? PRI_MIN: new_priority;
+	////////////////////////////////////////////////////////////////////////TESTING
+	curr->original_priority = curr->priority = (new_priority > PRI_MAX)?
+			PRI_MAX: (new_priority < PRI_MIN)? PRI_MIN: new_priority;
+	///////////////////////////////////////////////////////////////////////////////
+	//curr->priority = (new_priority > PRI_MAX)? PRI_MAX:
+	//		(new_priority < PRI_MIN)? PRI_MIN: new_priority;
   /* Yield if the priority is lowered down. */
   if (curr->priority < old_priority)
     thread_yield ();
@@ -361,6 +365,18 @@ int
 thread_get_priority (void) {
 	return thread_current ()->priority;
 }
+
+//////////////////////////////////////////////////////////////////////////TESTING
+/* Sets the priority of the TARGET thread to the greatest between its
+	 and DONOR's. */
+void
+thread_donate_priority (struct thread *donor, struct thread *target) {
+	ASSERT (is_thread (donor) && is_thread (target));
+
+	if (donor->priority > target->priority)
+		target->priority = donor->priority;
+}
+/////////////////////////////////////////////////////////////////////////////////
 
 /* Sets the current thread's nice value to NICE. */
 void
@@ -485,6 +501,9 @@ init_thread (struct thread *t, const char *name, int priority) {
 	strlcpy (t->name, name, sizeof t->name);
 	t->tf.rsp = (uint64_t) t + PGSIZE - sizeof (void *);
 	t->priority = priority;
+	////////////////////////////////////////////////////////////////////////TESTING
+	t->original_priority = priority;
+	///////////////////////////////////////////////////////////////////////////////
 	t->magic = THREAD_MAGIC;
 }
 
