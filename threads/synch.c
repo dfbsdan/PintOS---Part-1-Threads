@@ -32,6 +32,10 @@
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 
+/* Compares the PRIORITY values of two given threads. Returns true if
+   a's is less than b's, false otherwise. */
+static list_less_func compare_priorities;
+
 /* Initializes semaphore SEMA to VALUE.  A semaphore is a
    nonnegative integer along with two atomic operators for
    manipulating it:
@@ -66,7 +70,11 @@ sema_down (struct semaphore *sema) {
 
 	old_level = intr_disable ();
 	while (sema->value == 0) {
-		list_push_back (&sema->waiters, &thread_current ()->elem);
+		//////////////////////////////////////////////////////////////////////TESTING
+		list_insert_ordered (&sema->waiters, &thread_current ()->elem,
+				&compare_priorities, NULL);
+		/////////////////////////////////////////////////////////////////////////////
+		//list_push_back (&sema->waiters, &thread_current ()->elem);
 		thread_block ();
 	}
 	sema->value--;
@@ -109,10 +117,19 @@ sema_up (struct semaphore *sema) {
 	ASSERT (sema != NULL);
 
 	old_level = intr_disable ();
-	if (!list_empty (&sema->waiters))
-		thread_unblock (list_entry (list_pop_front (&sema->waiters),
-					struct thread, elem));
+	////////////////////////////////////////////////////////////////////////TESTING
 	sema->value++;
+	if (!list_empty (&sema->waiters)) {
+		//intr_set_level (old_level);
+		thread_unblock (list_entry (list_pop_back (&sema->waiters) ,
+				struct thread, elem));
+	} //else
+	//	intr_set_level (old_level);
+	///////////////////////////////////////////////////////////////////////////////
+	//if (!list_empty (&sema->waiters))
+	//	thread_unblock (list_entry (list_pop_front (&sema->waiters),
+	//			struct thread, elem));
+	//sema->value++;
 	intr_set_level (old_level);
 }
 
@@ -149,6 +166,20 @@ sema_test_helper (void *sema_) {
 		sema_down (&sema[0]);
 		sema_up (&sema[1]);
 	}
+}
+
+/* Compares the PRIORITY values of two given threads. Returns true if
+   a's is less than b's, false otherwise. */
+static bool
+compare_priorities (const struct list_elem *a, const struct list_elem *b,
+		void *aux UNUSED) {
+  ASSERT (a && b);
+
+  struct thread *aThr, *bThr;
+  aThr = list_entry (a, struct thread, elem);
+  bThr = list_entry (b, struct thread, elem);
+
+  return aThr->priority < bThr->priority;
 }
 
 /* Initializes LOCK.  A lock can be held by at most a single
