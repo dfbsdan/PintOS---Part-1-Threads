@@ -76,6 +76,9 @@ static void do_schedule(int status);
 static void schedule (void);
 static tid_t allocate_tid (void);
 static void wake_up_threads (void);
+//////////////////////////////////////////////////////////////////////////TESTING
+static struct thread *get_max_donator (void);
+/////////////////////////////////////////////////////////////////////////////////
 
 /* Returns true if T appears to point to a valid thread. */
 #define is_thread(t) ((t) != NULL && (t)->magic == THREAD_MAGIC)
@@ -347,11 +350,22 @@ thread_set_priority (int new_priority) {
 
 	curr = thread_current ();
 	old_priority = curr->priority;
-	/* Keep the priority inside the valid range. */
 	////////////////////////////////////////////////////////////////////////TESTING
-	curr->original_priority = curr->priority = (new_priority > PRI_MAX)?
+	int old_original_priority;
+
+	old_original_priority = curr->original_priority;
+	/* Keep the new priority inside the valid range and update the original
+		 priority. */
+	new_priority = curr->original_priority = (new_priority > PRI_MAX)?
 			PRI_MAX: (new_priority < PRI_MIN)? PRI_MIN: new_priority;
+	//Set the priority later if the thread has been donated a greater one
+	curr->priority = (old_original_priority == old_priority)?
+			new_priority: //No effective donation has taken place
+			(new_priority > old_priority)?
+					new_priority: //The new priority is greater than the donated one
+					old_priority; //Keep the donated priority as it is greater
 	///////////////////////////////////////////////////////////////////////////////
+	///* Keep the priority inside the valid range. */
 	//curr->priority = (new_priority > PRI_MAX)? PRI_MAX:
 	//		(new_priority < PRI_MIN)? PRI_MIN: new_priority;
   /* Yield if the priority is lowered down. */
@@ -368,13 +382,66 @@ thread_get_priority (void) {
 
 //////////////////////////////////////////////////////////////////////////TESTING
 /* Sets the priority of the TARGET thread to the greatest between its
-	 and DONOR's. */
+	 current one and current thread's. If such TARGET is waiting for a lock
+	 (i.e. nested locks), all the nested lock holders are also donated in
+	 case it is necessary. */
 void
-thread_donate_priority (struct thread *donor, struct thread *target) {
-	ASSERT (is_thread (donor) && is_thread (target));
+thread_donate_priority (struct thread *target) {
+	ASSERT (is_thread (target));
 
-	if (donor->priority > target->priority)
-		target->priority = donor->priority;
+	//Donate priority
+	if (thread_current ()->priority > target->priority)
+		target->priority = thread_current ()->priority;
+	//Handle nested locks
+	if (target->waiting_lock)
+		thread_donate_priority (target->waiting_lock->holder);
+}
+
+/* Updates the priority of the current thread to the maximum available
+ 	 it can receive from its locks held (being subject to a donation). If
+	 it is not possible then it restores the thread's original priority. */
+void
+thread_update_priority (void) {
+	struct thread *max_donator, *curr;
+
+	curr = thread_current ();
+	max_donator = get_max_donator ();
+	curr->priority = (max_donator->priority > curr->original_priority)?
+			max_donator->priority: curr->original_priority;
+}
+
+/* Returns a pointer to the thread with greatest priority inside the
+	 waiting lists of those locks being held by the current thread, if no
+	 donator is found, returns the current thread. */
+static struct thread *
+get_max_donator (void) {
+	struct thread *curr, *max_donator, *t;
+	struct list *lock_list, *waiters_list;
+	struct list_elem *lock, *thread_elem;
+
+	max_donator = curr = thread_current ();
+	lock_list = &curr->locks_held;
+  if (!list_empty (lock_list))) {
+		/* Traverse all locks inside current thread's locks_held list. */
+  	for (lock = list_front (lock_list);
+				lock != list_end (lock_list);
+				lock = list_next(lock)) {
+    	waiters_list =
+				&list_entry (lock, struct lock, lock_elem)->semaphore.waiters;
+    	if (!list_empty (waiters_list)) {
+      	/* Traverse all waiters for current lock and update max_donator
+				 	in case there is one with a higher priority. */
+      	for (thread_elem = list_front (waiters_list);
+						thread_elem != list_end (waiters_list);
+						thread_elem = list_next (thread_elem)) {
+        	t = list_entry (thread_elem, struct thread, elem);
+        	max_donator = (t->priority > max_donator->priority)?
+							t: max_donator;
+      	}
+    	}
+  	}
+	}
+  return max_donator;
 }
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -503,6 +570,8 @@ init_thread (struct thread *t, const char *name, int priority) {
 	t->priority = priority;
 	////////////////////////////////////////////////////////////////////////TESTING
 	t->original_priority = priority;
+	t->waiting_lock = NULL;
+	list_init (&t->locks_held);
 	///////////////////////////////////////////////////////////////////////////////
 	t->magic = THREAD_MAGIC;
 }

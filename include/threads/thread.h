@@ -91,6 +91,12 @@ struct thread {
 	int original_priority;							/* Original priority of the thread,
 																				 i.e. that has NOT been
 																				 donated. */
+	struct lock *waiting_lock;					/* Holds a pointer to a lock the
+																				 thread is waiting for, if there
+																				 is no such lock, it is NULL by
+																				 default. */
+	struct list locks_held;							/* List of locks being held by the
+																				 thread. */
 	///////////////////////////////////////////////////////////////////////////////
 	int64_t alarm;                      /* Holds the number of ticks that
 																				 define the wake up time of a
@@ -137,7 +143,8 @@ void thread_yield (void);
 int thread_get_priority (void);
 void thread_set_priority (int);
 //////////////////////////////////////////////////////////////////////////TESTING
-void thread_donate_priority (struct thread *donor, struct thread *target);
+void thread_donate_priority (struct thread *target);
+void thread_update_priority (void);
 /////////////////////////////////////////////////////////////////////////////////
 
 int thread_get_nice (void);
