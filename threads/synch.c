@@ -224,7 +224,7 @@ lock_acquire (struct lock *lock) {
 		thread_donate_priority (lock->holder);
 	}
 	sema_down (&lock->semaphore);
-	printf("Thread: '%s' with prty: %d acquired lock\n", curr->name, curr->priority);
+	//printf("Thread: '%s' with prty: %d acquired lock\n", curr->name, curr->priority);
 	lock->holder = curr;
 	curr->waiting_lock = NULL;
 	list_push_back (&curr->locks_held, &lock->lock_elem);
