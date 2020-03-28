@@ -388,6 +388,7 @@ thread_get_priority (void) {
 void
 thread_donate_priority (struct thread *target) {
 	ASSERT (is_thread (target));
+	ASSERT (intr_get_level () == INTR_OFF);
 
 	//Donate priority
 	if (thread_current ()->priority > target->priority)
@@ -404,14 +405,13 @@ void
 thread_update_priority (void) {
 	struct thread *max_donor, *curr;
 
+	ASSERT (intr_get_level () == INTR_OFF);
+
 	curr = thread_current ();
 	max_donor = get_max_donor ();
-	int old_priority = curr->priority;//////////////////////////////////////DELETE
 	curr->priority = (max_donor == curr)? curr->original_priority:
 			(max_donor->priority > curr->original_priority)?
 					max_donor->priority: curr->original_priority;
-
-	printf("Updating thread: '%s' priority: %d to: %d\n", curr->name, old_priority, curr->priority);
 }
 
 /* Returns a pointer to the thread with greatest priority inside the
@@ -422,6 +422,8 @@ get_max_donor (void) {
 	struct thread *curr, *max_donor, *t;
 	struct list *lock_list, *waiters_list;
 	struct list_elem *lock, *thread_elem;
+
+	ASSERT (intr_get_level () == INTR_OFF);
 
 	max_donor = curr = thread_current ();
 	lock_list = &curr->locks_held;
