@@ -40,11 +40,8 @@ test_priority_donate_sema (void)
   lock_init (&ls.lock);
   sema_init (&ls.sema, 0);
   thread_create ("low", PRI_DEFAULT + 1, l_thread_func, &ls);
-  msg ("Thread LOW created, main priority: %d", thread_get_priority ());///////////////////////DELETES
   thread_create ("med", PRI_DEFAULT + 3, m_thread_func, &ls);
-  msg ("Thread MED created, main priority: %d", thread_get_priority ());///////////////////////DELETE
   thread_create ("high", PRI_DEFAULT + 5, h_thread_func, &ls);
-  msg ("Thread HIGH created, main priority: %d", thread_get_priority ());///////////////////////DELETE
   sema_up (&ls.sema);
   msg ("Main thread finished.");
 }
