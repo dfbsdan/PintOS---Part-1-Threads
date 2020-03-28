@@ -3,7 +3,7 @@
    acquiring one of the locks and thus donate their priority to
    the main thread.  The main thread releases the locks in turn
    and relinquishes its donated priorities.
-   
+
    Based on a test originally submitted for Stanford's CS 140 in
    winter 1999 by Matt Franklin <startled@leland.stanford.edu>,
    Greg Hutchins <gmh@leland.stanford.edu>, Yu Ping Hu
@@ -19,7 +19,7 @@ static thread_func a_thread_func;
 static thread_func b_thread_func;
 
 void
-test_priority_donate_multiple (void) 
+test_priority_donate_multiple (void)
 {
   struct lock a, b;
 
@@ -44,18 +44,20 @@ test_priority_donate_multiple (void)
        PRI_DEFAULT + 2, thread_get_priority ());
 
   lock_release (&b);
+  msg ("Main thread released lock, new priority: %d.", thread_get_priority ());///////////DELETE
   msg ("Thread b should have just finished.");
   msg ("Main thread should have priority %d.  Actual priority: %d.",
        PRI_DEFAULT + 1, thread_get_priority ());
 
   lock_release (&a);
+  msg ("Main thread released lock, new priority: %d.", thread_get_priority ());///////////DELETE
   msg ("Thread a should have just finished.");
   msg ("Main thread should have priority %d.  Actual priority: %d.",
        PRI_DEFAULT, thread_get_priority ());
 }
 
 static void
-a_thread_func (void *lock_) 
+a_thread_func (void *lock_)
 {
   struct lock *lock = lock_;
 
@@ -66,7 +68,7 @@ a_thread_func (void *lock_)
 }
 
 static void
-b_thread_func (void *lock_) 
+b_thread_func (void *lock_)
 {
   struct lock *lock = lock_;
 
