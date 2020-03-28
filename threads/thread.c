@@ -441,7 +441,7 @@ get_max_donor (void) {
 						thread_elem != list_end (waiters_list);
 						thread_elem = list_next (thread_elem)) {
         	t = list_entry (thread_elem, struct thread, elem);
-        	max_donor = (t->priority > max_donor->priority)? t: max_donor;
+        	max_donor = (t->priority >= max_donor->priority)? t: max_donor;
       	}
     	}
   	}
