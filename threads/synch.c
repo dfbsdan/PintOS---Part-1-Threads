@@ -126,6 +126,8 @@ sema_up (struct semaphore *sema) {
 	if (!list_empty (&sema->waiters))
 	////////////////////////////////////////////////////////////////////////TESTING
 	{
+		struct thread *t;
+
 		t = list_entry (list_max (&sema->waiters, compare_priorities, NULL), struct thread, elem);
 		list_remove (&t->elem);
 		thread_unblock (t);
