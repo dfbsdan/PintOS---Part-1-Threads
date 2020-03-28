@@ -275,7 +275,7 @@ lock_release (struct lock *lock) {
 	original one. */
 	int old_priority = lock->holder->priority;
 	thread_update_priority ();
-	//printf("Thread: '%s' with prty: %d releasing lock, new priority: %d\n", lock->holder->name, old_priority, lock->holder->priority);
+	printf("Thread: '%s' with prty: %d releasing lock, new priority: %d\n", lock->holder->name, old_priority, lock->holder->priority);
 
 	sema_up (&lock->semaphore);
 	intr_set_level (old_level);
