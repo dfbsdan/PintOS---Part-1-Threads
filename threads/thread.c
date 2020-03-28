@@ -406,9 +406,12 @@ thread_update_priority (void) {
 
 	curr = thread_current ();
 	max_donor = get_max_donor ();
+	int old_priority = curr->priority;//////////////////////////////////////DELETE
 	curr->priority = (max_donor == curr)? curr->original_priority:
 			(max_donor->priority > curr->original_priority)?
 					max_donor->priority: curr->original_priority;
+
+	printf("Updating thread: '%s' priority: %d to: %d\n", curr->name, old_priority, curr->priority);
 }
 
 /* Returns a pointer to the thread with greatest priority inside the
