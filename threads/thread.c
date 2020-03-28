@@ -76,9 +76,7 @@ static void do_schedule(int status);
 static void schedule (void);
 static tid_t allocate_tid (void);
 static void wake_up_threads (void);
-//////////////////////////////////////////////////////////////////////////TESTING
 static struct thread *get_max_donor (void);
-/////////////////////////////////////////////////////////////////////////////////
 
 /* Returns true if T appears to point to a valid thread. */
 #define is_thread(t) ((t) != NULL && (t)->magic == THREAD_MAGIC)
@@ -345,14 +343,11 @@ thread_yield (void) {
 /* Sets the current thread's priority to NEW_PRIORITY. */
 void
 thread_set_priority (int new_priority) {
-	int old_priority;
+	int old_priority, old_original_priority;
 	struct thread *curr;
 
 	curr = thread_current ();
 	old_priority = curr->priority;
-	////////////////////////////////////////////////////////////////////////TESTING
-	int old_original_priority;
-
 	old_original_priority = curr->original_priority;
 	/* Keep the new priority inside the valid range and update the original
 		 priority. */
@@ -364,10 +359,6 @@ thread_set_priority (int new_priority) {
 			(new_priority > old_priority)?
 					new_priority: //The new priority is greater than the donated one
 					old_priority; //Keep the donated priority as it is greater
-	///////////////////////////////////////////////////////////////////////////////
-	///* Keep the priority inside the valid range. */
-	//curr->priority = (new_priority > PRI_MAX)? PRI_MAX:
-	//		(new_priority < PRI_MIN)? PRI_MIN: new_priority;
   /* Yield if the priority is lowered down. */
   if (curr->priority < old_priority)
     thread_yield ();
@@ -380,7 +371,6 @@ thread_get_priority (void) {
 	return thread_current ()->priority;
 }
 
-//////////////////////////////////////////////////////////////////////////TESTING
 /* Sets the priority of the TARGET thread to the greatest between its
 	 current one and current thread's. If such TARGET is waiting for a lock
 	 (i.e. nested locks), all the nested lock holders are also donated in
@@ -448,7 +438,6 @@ get_max_donor (void) {
 	}
   return max_donor;
 }
-/////////////////////////////////////////////////////////////////////////////////
 
 /* Sets the current thread's nice value to NICE. */
 void
@@ -573,11 +562,9 @@ init_thread (struct thread *t, const char *name, int priority) {
 	strlcpy (t->name, name, sizeof t->name);
 	t->tf.rsp = (uint64_t) t + PGSIZE - sizeof (void *);
 	t->priority = priority;
-	////////////////////////////////////////////////////////////////////////TESTING
 	t->original_priority = priority;
 	t->waiting_lock = NULL;
 	list_init (&t->locks_held);
-	///////////////////////////////////////////////////////////////////////////////
 	t->magic = THREAD_MAGIC;
 }
 
