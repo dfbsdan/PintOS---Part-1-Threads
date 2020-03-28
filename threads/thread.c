@@ -77,7 +77,7 @@ static void schedule (void);
 static tid_t allocate_tid (void);
 static void wake_up_threads (void);
 //////////////////////////////////////////////////////////////////////////TESTING
-static struct thread *get_max_donator (void);
+static struct thread *get_max_donor (void);
 /////////////////////////////////////////////////////////////////////////////////
 
 /* Returns true if T appears to point to a valid thread. */
@@ -402,24 +402,25 @@ thread_donate_priority (struct thread *target) {
 	 it is not possible then it restores the thread's original priority. */
 void
 thread_update_priority (void) {
-	struct thread *max_donator, *curr;
+	struct thread *max_donor, *curr;
 
 	curr = thread_current ();
-	max_donator = get_max_donator ();
-	curr->priority = (max_donator->priority > curr->original_priority)?
-			max_donator->priority: curr->original_priority;
+	max_donor = get_max_donor ();
+	curr->priority = (max_donor == curr)? curr->original_priority:
+			(max_donor->priority > curr->original_priority)?
+					max_donor->priority: curr->original_priority;
 }
 
 /* Returns a pointer to the thread with greatest priority inside the
 	 waiting lists of those locks being held by the current thread, if no
 	 donator is found, returns the current thread. */
 static struct thread *
-get_max_donator (void) {
-	struct thread *curr, *max_donator, *t;
+get_max_donor (void) {
+	struct thread *curr, *max_donor, *t;
 	struct list *lock_list, *waiters_list;
 	struct list_elem *lock, *thread_elem;
 
-	max_donator = curr = thread_current ();
+	max_donor = curr = thread_current ();
 	lock_list = &curr->locks_held;
   if (!list_empty (lock_list)) {
 		/* Traverse all locks inside current thread's locks_held list. */
@@ -429,19 +430,18 @@ get_max_donator (void) {
     	waiters_list =
 				&list_entry (lock, struct lock, lock_elem)->semaphore.waiters;
     	if (!list_empty (waiters_list)) {
-      	/* Traverse all waiters for current lock and update max_donator
+      	/* Traverse all waiters for current lock and update max_donor
 				 	in case there is one with a higher priority. */
       	for (thread_elem = list_front (waiters_list);
 						thread_elem != list_end (waiters_list);
 						thread_elem = list_next (thread_elem)) {
         	t = list_entry (thread_elem, struct thread, elem);
-        	max_donator = (t->priority > max_donator->priority)?
-							t: max_donator;
+        	max_donor = (t->priority > max_donor->priority)? t: max_donor;
       	}
     	}
   	}
 	}
-  return max_donator;
+  return max_donor;
 }
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -608,7 +608,7 @@ compare_priorities (const struct list_elem *a, const struct list_elem *b,
   aThr = list_entry (a, struct thread, elem);
   bThr = list_entry (b, struct thread, elem);
   ASSERT (is_thread (aThr) && is_thread (bThr));
-  return aThr->priority <= bThr->priority;
+  return aThr->priority < bThr->priority;
 }
 
 /* Use iretq to launch the thread */
