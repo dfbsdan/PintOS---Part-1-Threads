@@ -358,7 +358,7 @@ thread_set_priority (int new_priority) {
 	old_original_priority = curr->original_priority;
 	/* Keep the new priority inside the valid range and update the original
 		 priority. */
-	new_priority = curr->original_priority = (new_priority > PRI_MAX)?
+	/*new_priority = curr->original_priority = (new_priority > PRI_MAX)?
 			PRI_MAX: (new_priority < PRI_MIN)? PRI_MIN: new_priority;
 	//Set the priority later if the thread has been donated a greater one
 	curr->priority = (old_original_priority == old_priority)?
@@ -366,6 +366,9 @@ thread_set_priority (int new_priority) {
 			(new_priority > old_priority)?
 					new_priority: //The new priority is greater than the donated one
 					old_priority; //Keep the donated priority as it is greater
+	*/
+	curr->priority = curr->original_priority = (new_priority > PRI_MAX)? PRI_MAX:
+			(new_priority < PRI_MIN)? PRI_MIN: new_priority;
 	///////////////////////////////////////////////////////////////////////////////
 	///* Keep the priority inside the valid range. */
 	//curr->priority = (new_priority > PRI_MAX)? PRI_MAX:
