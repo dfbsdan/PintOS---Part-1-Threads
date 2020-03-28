@@ -608,7 +608,7 @@ compare_priorities (const struct list_elem *a, const struct list_elem *b,
   aThr = list_entry (a, struct thread, elem);
   bThr = list_entry (b, struct thread, elem);
   ASSERT (is_thread (aThr) && is_thread (bThr));
-  return aThr->priority < bThr->priority;
+  return aThr->priority <= bThr->priority;
 }
 
 /* Use iretq to launch the thread */
