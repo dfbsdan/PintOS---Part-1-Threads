@@ -223,8 +223,6 @@ thread_create (const char *name, int priority,
 	t->tf.cs = SEL_KCSEG;
 	t->tf.eflags = FLAG_IF;
 
-	printf("Thread: '%s' created with prty: %d\n", name, priority);
-
 	/* Add to run queue. */
 	thread_unblock (t);
 

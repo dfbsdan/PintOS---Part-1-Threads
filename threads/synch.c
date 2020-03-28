@@ -218,13 +218,11 @@ lock_acquire (struct lock *lock) {
 
 	old_level = intr_disable ();
 	curr = thread_current ();
-	//printf("Thread: '%s' with prty: %d trying to acquire lock with holder: '%s' of prty: %d\n", curr->name, curr->priority, (lock->holder)? lock->holder->name: NULL, (lock->holder)? lock->holder->priority: 0);
 	if (lock->holder) {
 		curr->waiting_lock = lock;
 		thread_donate_priority (lock->holder);
 	}
 	sema_down (&lock->semaphore);
-	//printf("Thread: '%s' with prty: %d acquired lock\n", curr->name, curr->priority);
 	lock->holder = curr;
 	curr->waiting_lock = NULL;
 	list_push_back (&curr->locks_held, &lock->lock_elem);
@@ -249,7 +247,16 @@ lock_try_acquire (struct lock *lock) {
 
 	success = sema_try_down (&lock->semaphore);
 	if (success)
-		lock->holder = thread_current ();
+	////////////////////////////////////////////////////////////////////////TESTING
+	{
+		struct thread *curr;
+		
+		curr = thread_current ();
+		lock->holder = curr;
+		list_push_back (&curr->locks_held, &lock->lock_elem);
+	}
+	///////////////////////////////////////////////////////////////////////////////
+		//lock->holder = thread_current ();
 	return success;
 }
 
@@ -273,10 +280,7 @@ lock_release (struct lock *lock) {
   list_remove (&lock->lock_elem);
 	/* Get the max priority available (from possible donors) or restore the
 	original one. */
-	int old_priority = thread_current ()->priority;
 	thread_update_priority ();
-	//printf("Thread: '%s' with prty: %d releasing lock, new priority: %d\n", thread_current ()->name, old_priority, thread_current ()->priority);
-
 	sema_up (&lock->semaphore);
 	intr_set_level (old_level);
 	///////////////////////////////////////////////////////////////////////////////
