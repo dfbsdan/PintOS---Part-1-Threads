@@ -218,7 +218,7 @@ lock_acquire (struct lock *lock) {
 
 	old_level = intr_disable ();
 	curr = thread_current ();
-	printf("Thread: '%s' with prty: %d trying to acquire lock with holder: '%s' of prty: %d\n", curr->name, curr->priority, (lock->holder)? lock->holder->name: NULL, (lock->holder)? lock->holder->priority: 0);
+	//printf("Thread: '%s' with prty: %d trying to acquire lock with holder: '%s' of prty: %d\n", curr->name, curr->priority, (lock->holder)? lock->holder->name: NULL, (lock->holder)? lock->holder->priority: 0);
 	if (lock->holder) {
 		curr->waiting_lock = lock;
 		thread_donate_priority (lock->holder);
