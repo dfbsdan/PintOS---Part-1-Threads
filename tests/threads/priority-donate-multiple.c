@@ -44,13 +44,13 @@ test_priority_donate_multiple (void)
        PRI_DEFAULT + 2, thread_get_priority ());
 
   lock_release (&b);
-  msg ("Main thread released lock, new priority: %d.", thread_get_priority ());///////////DELETE
+  //msg ("Main thread released lock, new priority: %d.", thread_get_priority ());///////////DELETE
   msg ("Thread b should have just finished.");
   msg ("Main thread should have priority %d.  Actual priority: %d.",
        PRI_DEFAULT + 1, thread_get_priority ());
 
   lock_release (&a);
-  msg ("Main thread released lock, new priority: %d.", thread_get_priority ());///////////DELETE
+  //msg ("Main thread released lock, new priority: %d.", thread_get_priority ());///////////DELETE
   msg ("Thread a should have just finished.");
   msg ("Main thread should have priority %d.  Actual priority: %d.",
        PRI_DEFAULT, thread_get_priority ());
