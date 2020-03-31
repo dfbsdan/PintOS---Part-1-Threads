@@ -186,7 +186,7 @@ thread_tick (void) {
 			mlfqs_update_priorities ();
 		} else
 			priority_ticks++;
-		///////////////////////////////////////////////////////////////////////////////////////////update load avgs and recent_cpus 
+		///////////////////////////////////////////////////////////////////////////////////////////update load avgs and recent_cpus
 	}
 	/* Enforce preemption. */
 	if (++thread_ticks >= TIME_SLICE)
@@ -362,7 +362,7 @@ thread_yield (void) {
 	old_level = intr_disable ();
 	if (curr != idle_thread) {
 		if (thread_mlfqs)
-			list_insert_ordered (&ready_list, &t->elem, &compare_priorities,
+			list_insert_ordered (&ready_list, &curr->elem, &compare_priorities,
 					NULL);
 		else
 			list_push_back (&ready_list, &curr->elem);
@@ -604,7 +604,7 @@ kernel_thread (thread_func *function, void *aux) {
 /* Does basic initialization of T as a blocked thread named
    NAME. */
 static void
-init_thread (struct thread *, const char *name, int priority,
+init_thread (struct thread *t, const char *name, int priority,
 		int recent_cpu, int nice) {
 	ASSERT (t != NULL);
 	ASSERT (PRI_MIN <= priority && priority <= PRI_MAX);
