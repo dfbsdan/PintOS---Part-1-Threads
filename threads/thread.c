@@ -696,10 +696,8 @@ mlfqs_update_recent_cpu (void) {
 				t_all_elem != list_end (&all_list);
 				t_all_elem = list_next (t_all_elem)) {
 			t = list_entry (t_all_elem, struct thread, all_elem);
-			if (t != idle_thread) {
-				coefficient = (2 * load_avg) / (2 * load_avg + 1); //////////////////////////////////fINISH FORMULA
-				t->recent_cpu = coefficient * recent_cpu + nice;
-			}
+			coefficient = (2 * load_avg) / (2 * load_avg + 1); //////////////////////////////////fINISH FORMULA
+			t->recent_cpu = coefficient * t->recent_cpu + t->nice;
 		}
 	}
 	ASSERT (0); //////////////////////////////////////////////////////////////////////////////////////////remove when done
