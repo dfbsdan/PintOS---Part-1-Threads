@@ -25,6 +25,8 @@
    Do not modify this value. */
 #define THREAD_BASIC 0xd42df210
 
+static int load_avg; /* System's load average value. */
+
 /* Compares the PRIORITY values of two given threads. Returns true if
    a's is less than b's, false otherwise. */
 static list_less_func compare_priorities;
@@ -61,13 +63,12 @@ static struct list destruction_req;
 static long long idle_ticks;    /* # of timer ticks spent idle. */
 static long long kernel_ticks;  /* # of timer ticks in kernel threads. */
 static long long user_ticks;    /* # of timer ticks in user programs. */
-static long long load_avg;			/* System's load average value. */
-static int priority_ticks;			/* # of timer ticks since last priority
-																	calculation (mlfqs). */
 
 /* Scheduling. */
 #define TIME_SLICE 4            /* # of timer ticks to give each thread. */
 static unsigned thread_ticks;   /* # of timer ticks since last yield. */
+static int priority_ticks;			/* # of timer ticks since last priority
+																	calculation (mlfqs). */
 
 /* If false (default), use round-robin scheduler.
    If true, use multi-level feedback queue scheduler.
@@ -87,6 +88,8 @@ static void wake_up_threads (void);
 static struct thread *get_max_donor (void);
 static int mlfqs_calculate_priority (struct thread *t);
 static void mlfqs_update_priorities (void);
+static void mlfqs_update_recent_cpu (void);
+static void mlfqs_update_load_avg (void);
 
 /* Returns true if T appears to point to a valid thread. */
 #define is_thread(t) ((t) != NULL && (t)->magic == THREAD_MAGIC)
@@ -186,7 +189,13 @@ thread_tick (void) {
 			mlfqs_update_priorities ();
 		} else
 			priority_ticks++;
-		///////////////////////////////////////////////////////////////////////////////////////////update load avgs and recent_cpus
+		//Update recent_cpu values and load_avg
+		if (t != idle_thread)
+			t->recent_cpu++;
+		if (timer_ticks () % TIMER_FREQ == 0) {
+			mlfqs_update_recent_cpu ();
+			mlfqs_update_load_avg ();
+		}
 	}
 	/* Enforce preemption. */
 	if (++thread_ticks >= TIME_SLICE)
@@ -541,6 +550,8 @@ wake_up_threads (void) {
   struct thread *t;
 	int64_t ticks;
 
+	ASSERT (intr_context ());
+
 	old_level = intr_disable ();
 	ticks = timer_ticks ();
   while (!list_empty (&sleep_list)) {
@@ -645,6 +656,7 @@ mlfqs_update_priorities (void) {
 	struct list_elem *t_all_elem;
 
 	ASSERT (thread_mlfqs);
+	ASSERT (intr_context ());
 
 	if (!list_empty (&all_list)) {
 		for (t_all_elem = list_front (&all_list);
@@ -654,6 +666,26 @@ mlfqs_update_priorities (void) {
 			t->priority = mlfqs_calculate_priority (t);
 		}
 	}
+	//////////////////////////////////////////////////////////////////////////////////////////////////////Sort ready_list
+	ASSERT (0); //////////////////////////////////////////////////////////////////////////////////////////remove when done
+}
+
+/* Updates the recent_cpu values of all existing threads (mlfqs). */
+static void
+mlfqs_update_recent_cpu (void) {
+	ASSERT (thread_mlfqs);
+	ASSERT (intr_context ());
+
+	ASSERT (0); //////////////////////////////////////////////////////////////////////////////////////////remove when done
+}
+
+/* Updates the global variable load_avg (mlfqs). */
+static void
+mlfqs_update_load_avg (void) {
+	ASSERT (thread_mlfqs);
+	ASSERT (intr_context ());
+
+	ASSERT (0); //////////////////////////////////////////////////////////////////////////////////////////remove when done
 }
 
 /* Chooses and returns the next thread to be scheduled.  Should
