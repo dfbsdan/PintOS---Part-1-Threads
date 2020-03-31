@@ -658,7 +658,7 @@ mlfqs_update_priorities (void) {
 	ASSERT (thread_mlfqs);
 	ASSERT (intr_context ());
 
-	printf("Updating priorities...\n");/////////////////////////////////////////////////////REMOVE
+	//printf("Updating priorities...\n");/////////////////////////////////////////////////////REMOVE
 	if (!list_empty (&all_list)) {
 		for (t_all_elem = list_front (&all_list);
 				t_all_elem != list_end (&all_list);
@@ -670,13 +670,13 @@ mlfqs_update_priorities (void) {
 		list_sort (&all_list, &compare_priorities, NULL);
 	}
 	///////////////////////////////////////////////////////////////////////////////////////TESTING
-	printf("Finised updating priorities, new list:\n");
+	//printf("Finised updating priorities, new list:\n");
 	if (!list_empty (&all_list)) {
 		for (t_all_elem = list_front (&all_list);
 				t_all_elem != list_end (&all_list);
 				t_all_elem = list_next (t_all_elem)) {
 			t = list_entry (t_all_elem, struct thread, all_elem);
-			printf("Thread: '%s', priority: %d\n", t->name, t->priority);
+			//printf("Thread: '%s', priority: %d\n", t->name, t->priority);
 		}
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////////
