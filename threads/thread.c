@@ -186,7 +186,7 @@ thread_tick (void) {
 		ASSERT (priority_ticks <= 4 && priority_ticks >= 0);
 		if (priority_ticks == 4) {
 			priority_ticks = 0;
-			//mlfqs_update_priorities ();
+			mlfqs_update_priorities ();
 		} else
 			priority_ticks++;
 		//Update recent_cpu values and load_avg
@@ -668,7 +668,6 @@ mlfqs_update_priorities (void) {
 		//Sort the list again after updating the priorities
 		list_sort (&all_list, &compare_priorities, NULL);
 	}
-	ASSERT (0);
 }
 
 /* Updates the recent_cpu values of all existing threads (mlfqs). */
