@@ -665,17 +665,43 @@ mlfqs_update_priorities (void) {
 			t = list_entry (t_all_elem, struct thread, all_elem);
 			t->priority = mlfqs_calculate_priority (t);
 		}
+		//Sort the list again after updating the priorities
+		list_sort (&all_list, &compare_priorities, NULL);
 	}
-	//////////////////////////////////////////////////////////////////////////////////////////////////////Sort ready_list
-	ASSERT (0); //////////////////////////////////////////////////////////////////////////////////////////remove when done
+	///////////////////////////////////////////////////////////////////////////////////////TESTING
+	printf("Finised updating priorities, new list:\n");
+	if (!list_empty (&all_list)) {
+		for (t_all_elem = list_front (&all_list);
+				t_all_elem != list_end (&all_list);
+				t_all_elem = list_next (t_all_elem)) {
+			t = list_entry (t_all_elem, struct thread, all_elem);
+			printf("Thread: '%s', priority: %d\n", t->name, t->priority);
+		}
+	}
+	//////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 /* Updates the recent_cpu values of all existing threads (mlfqs). */
 static void
 mlfqs_update_recent_cpu (void) {
+	struct thread *t;
+	struct list_elem *t_all_elem;
+	int coefficient;
+
 	ASSERT (thread_mlfqs);
 	ASSERT (intr_context ());
 
+	if (!list_empty (&all_list)) {
+		for (t_all_elem = list_front (&all_list);
+				t_all_elem != list_end (&all_list);
+				t_all_elem = list_next (t_all_elem)) {
+			t = list_entry (t_all_elem, struct thread, all_elem);
+			if (t != idle_thread) {
+				coefficient = (2 * load_avg) / (2 * load_avg + 1); //////////////////////////////////fINISH FORMULA
+				t->recent_cpu = coefficient * recent_cpu + nice;
+			}
+		}
+	}
 	ASSERT (0); //////////////////////////////////////////////////////////////////////////////////////////remove when done
 }
 
@@ -685,6 +711,7 @@ mlfqs_update_load_avg (void) {
 	ASSERT (thread_mlfqs);
 	ASSERT (intr_context ());
 
+	load_avg = (59/60) * load_avg + (1/60) * (int)list_size (&ready_list); //////////////////////////////////fINISH FORMULA
 	ASSERT (0); //////////////////////////////////////////////////////////////////////////////////////////remove when done
 }
 
