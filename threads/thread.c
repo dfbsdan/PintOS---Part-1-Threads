@@ -658,6 +658,7 @@ mlfqs_update_priorities (void) {
 	ASSERT (thread_mlfqs);
 	ASSERT (intr_context ());
 
+	printf("Updating priorities...\n");/////////////////////////////////////////////////////REMOVE
 	if (!list_empty (&all_list)) {
 		for (t_all_elem = list_front (&all_list);
 				t_all_elem != list_end (&all_list);
