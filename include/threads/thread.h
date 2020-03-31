@@ -90,18 +90,23 @@ struct thread {
 	int original_priority;							/* Original priority of the thread,
 																				 i.e. that has NOT been
 																				 donated. */
-	struct lock *waiting_lock;					/* Holds a pointer to a lock the
-																				 thread is waiting for, if there
-																				 is no such lock, it is NULL by
-																				 default. */
-	struct list locks_held;							/* List of locks being held by the
-																				 thread. */
+	struct list_elem all_elem;					/* Element used in the all_list. */
+	int recent_cpu;											/* Recent cpu value (mlfqs). */
+	int nice;														/* Niceness value (mlfqs). */
+
+	/* Shared between thread.c and timer.c. */
 	int64_t alarm;                      /* Holds the number of ticks that
 																				 define the wake up time of a
 																				 thread. */
 
 	/* Shared between thread.c and synch.c. */
 	struct list_elem elem;              /* List element. */
+	struct lock *waiting_lock;					/* Holds a pointer to a lock the
+																				 thread is waiting for, if there
+																				 is no such lock, it is NULL by
+																				 default. */
+	struct list locks_held;							/* List of locks being held by the
+																				 thread. */
 
 #ifdef USERPROG
 	/* Owned by userprog/process.c. */
