@@ -290,7 +290,8 @@ thread_unblock (struct thread *t) {
 
 	old_level = intr_disable ();
 	ASSERT (t->status == THREAD_BLOCKED);
-	list_push_back (&ready_list, &t->elem);
+	if (t != idle_thread)
+		list_push_back (&ready_list, &t->elem);
 	t->status = THREAD_READY;
 	intr_set_level (old_level);
 	if (t->priority > thread_current ()->priority &&
@@ -621,8 +622,7 @@ init_thread (struct thread *t, const char *name, int priority,
 	t->recent_cpu = recent_cpu;
 	t->nice = nice;
 	t->magic = THREAD_MAGIC;
-	t->priority = (thread_mlfqs && t != initial_thread && t != idle_thread)? 
-			mlfqs_calculate_priority(t): priority;
+	t->priority = (thread_mlfqs)? mlfqs_calculate_priority(t): priority;
 	t->original_priority = priority;
 	t->waiting_lock = NULL;
 	list_init (&t->locks_held);
