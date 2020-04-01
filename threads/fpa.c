@@ -1,36 +1,57 @@
 #include "threads/fpa.h"
 
-int n_to_fp(int n){ /* Integer to fixed point */
+/* Integer to fixed point */
+int n_to_fp (int n) {
   return n * F;
 }
-int fp_to_n_near(int x){ /* Fixed point to integer, rounded to nearest */
+
+/* Fixed point to integer, rounded to nearest */
+int fp_to_n_near (int x) {
   return x / F;
 }
-int fp_to_n_down(int x){ /* Fixed point to integer, rounded down */
+
+/* Fixed point to integer, rounded down */
+int fp_to_n_down (int x) {
   return (x >= 0)? (x + F / 2) / F:
       (x - F / 2) / F;
 }
-int add_fp(int x, int y){ /* Add fp and fp*/
+
+/* Add fp and fp */
+int add_fp (int x, int y) {
   return x + y;
 }
-int sub_fp(int x, int y){ /* Subtract fp and fp */
+
+/* Subtract fp and fp */
+int sub_fp (int x, int y) {
   return x - y;
-};
-int add_fp_n(int x, int n){ /* Add fp and int */
+}
+
+/* Add fp and int */
+int add_fp_n (int x, int n) {
   return x + n * F;
 }
-int sub_fp_n(int x, int n){ /* Subtract fp and int */
+
+/* Subtract fp and int */
+int sub_fp_n (int x, int n) {
   return x - n * F;
 }
-int mult_fp(int x, int y){ /* Multiply fp and fp */
+
+/* Multiply fp and fp */
+int mult_fp (int x, int y) {
   return ((int64_t) x) * y / F;
 }
-int mult_fp_n(int x, int y){ /* Multiply fp and int */
+
+/* Multiply fp and int */
+int mult_fp_n (int x, int n) {
   return x * n;
 }
-int div_fp(int x, int y){ /* Divide fp and fp */
+
+/* Divide fp and fp */
+int div_fp (int x, int y) {
   return ((int64_t) x) * F / y;
 }
-int div_fp_n(int x, int n){ /* Divide fp and int */
+
+/* Divide fp and int */
+int div_fp_n (int x, int n) {
   return x / n;
 }

@@ -187,7 +187,7 @@ thread_tick (void) {
 		ASSERT (priority_ticks <= 3 && priority_ticks >= 0);
 		//Update recent_cpu values and load_avg
 		if (t != idle_thread)
-			t->recent_cpu += 100;
+			t->recent_cpu = add_fp_n (t->recent_cpu, 1);
 		if ((timer_ticks () % TIMER_FREQ) == 0) {
 			mlfqs_update_load_avg ();
 			mlfqs_update_recent_cpu ();
@@ -509,7 +509,7 @@ int
 thread_get_load_avg (void) {
 	ASSERT (thread_mlfqs);
 
-	return load_avg;
+	return fp_to_n_down (mult_fp_n (load_avg, 100));
 }
 
 /* Returns 100 times the current thread's recent_cpu value. */
@@ -517,7 +517,7 @@ int
 thread_get_recent_cpu (void) {
 	ASSERT (thread_mlfqs);
 
-	return thread_current ()->recent_cpu;
+	return fp_to_n_down (mult_fp_n (thread_current ()->recent_cpu, 100));
 }
 
 /* Compares the ALARM values of two given threads. Returns true if
@@ -637,7 +637,8 @@ mlfqs_calculate_priority (struct thread *t) {
 	ASSERT (is_thread (t));
 	ASSERT (thread_mlfqs);
 
-	new_priority = PRI_MAX - ((t->recent_cpu / 4) / 100) - (t->nice * 2);
+	new_priority = fp_to_n_down (div_fp_n (t->recent_cpu, 4));
+	new_priority = PRI_MAX - new_priority - (t->nice * 2);
 	return (new_priority > PRI_MAX)? PRI_MAX:
 			(new_priority < PRI_MIN)? PRI_MIN: new_priority;
 }
@@ -666,7 +667,7 @@ static void
 mlfqs_update_recent_cpu (void) {
 	struct thread *t;
 	struct list_elem *t_all_elem;
-	int64_t coefficient;
+	int coeff;
 
 	ASSERT (thread_mlfqs);
 	ASSERT (intr_context ());
@@ -676,8 +677,9 @@ mlfqs_update_recent_cpu (void) {
 				t_all_elem != list_end (&all_list);
 				t_all_elem = list_next (t_all_elem)) {
 			t = list_entry (t_all_elem, struct thread, all_elem);
-			coefficient = (((int64_t)(2 * load_avg))*100) / (2 * load_avg + 1);
-			t->recent_cpu = (coefficient * t->recent_cpu) / 100 + t->nice * 100;
+			coeff = mult_fp_n (load_avg, 2);
+			coeff = div_fp (coeff, add_fp_n (coeff, 1));
+			t->recent_cpu = add_fp_n (mult_fp (coeff, t->recent_cpu), t->nice);
 		}
 	}
 }
@@ -685,17 +687,18 @@ mlfqs_update_recent_cpu (void) {
 /* Updates the global variable load_avg (mlfqs). */
 static void
 mlfqs_update_load_avg (void) {
-	int64_t temp, ready_list_size;
+	int temp, ready_list_sz;
 
 	ASSERT (thread_mlfqs);
 	ASSERT (intr_context ());
 
-	ready_list_size = (thread_current () != idle_thread)?
-			(int64_t)list_size (&ready_list) + 1:
-			(int64_t)list_size (&ready_list);
-	temp = ((int64_t)(5900/60) * load_avg) / 100;
-	temp += ((int64_t)(100/60)*(ready_list_size*100))/100;
-	load_avg = (int)temp;
+	ready_list_sz = (thread_current () != idle_thread)?
+			n_to_fp (list_size (&ready_list) + 1):
+			n_to_fp (list_size (&ready_list));
+	temp = mult_fp (div_fp (n_to_fp (59), n_to_fp (60)), load_avg);
+	load_avg = add_fp (temp,
+			mult_fp (div_fp (n_to_fp (1), n_to_fp (60)),
+					ready_list_sz));
 }
 
 /* Chooses and returns the next thread to be scheduled.  Should
