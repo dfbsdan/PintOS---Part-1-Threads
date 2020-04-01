@@ -188,8 +188,8 @@ thread_tick (void) {
 		if (t != idle_thread)
 			t->recent_cpu += 100;
 		if ((timer_ticks () % TIMER_FREQ) == 0) {
-			mlfqs_update_recent_cpu ();
 			mlfqs_update_load_avg ();
+			mlfqs_update_recent_cpu ();
 		}
 		if (priority_ticks == 3) {
 			priority_ticks = 0;
