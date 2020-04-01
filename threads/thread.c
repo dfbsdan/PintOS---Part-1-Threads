@@ -621,7 +621,8 @@ init_thread (struct thread *t, const char *name, int priority,
 	t->recent_cpu = recent_cpu;
 	t->nice = nice;
 	t->magic = THREAD_MAGIC;
-	t->priority = (thread_mlfqs)? mlfqs_calculate_priority(t): priority;
+	t->priority = (thread_mlfqs && t != initial_thread && t != idle_thread)? 
+			mlfqs_calculate_priority(t): priority;
 	t->original_priority = priority;
 	t->waiting_lock = NULL;
 	list_init (&t->locks_held);
