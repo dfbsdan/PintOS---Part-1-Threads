@@ -684,13 +684,15 @@ mlfqs_update_recent_cpu (void) {
 /* Updates the global variable load_avg (mlfqs). */
 static void
 mlfqs_update_load_avg (void) {
-	int64_t temp;
+	int64_t temp, ready_list_size;
 
 	ASSERT (thread_mlfqs);
 	ASSERT (intr_context ());
 
+	ready_list_size = (thread_current () != idle_thread)?
+			(int64_t)list_size (&ready_list) + 1:
+			(int64_t)list_size (&ready_list);
 	temp = ((int64_t)(5900/60) * load_avg) / 100;
-	int64_t ready_list_size = (int64_t)list_size (&ready_list);
 	temp += ((int64_t)(100/60)*(ready_list_size*100))/100;
 	load_avg = (int)temp;
 }
