@@ -290,8 +290,7 @@ thread_unblock (struct thread *t) {
 
 	old_level = intr_disable ();
 	ASSERT (t->status == THREAD_BLOCKED);
-	if (t != idle_thread)
-		list_push_back (&ready_list, &t->elem);
+	list_push_back (&ready_list, &t->elem);
 	t->status = THREAD_READY;
 	intr_set_level (old_level);
 	if (t->priority > thread_current ()->priority &&
@@ -571,11 +570,19 @@ idle (void *idle_started_ UNUSED) {
 	struct semaphore *idle_started = idle_started_;
 
 	idle_thread = thread_current ();
+	list_remove (&idle_thread->elem);
+	idle_thread->elem->prev = NULL;
+	idle_thread->elem->next = NULL;
 	sema_up (idle_started);
 
 	for (;;) {
 		/* Let someone else run. */
 		intr_disable ();
+		if (idle_thread->elem->prev || idle_thread->elem->next) {
+			list_remove (&idle_thread->elem);
+			idle_thread->elem->prev = NULL;
+			idle_thread->elem->next = NULL;
+		}
 		thread_block ();
 
 		/* Re-enable interrupts and wait for the next one.
