@@ -665,7 +665,7 @@ static void
 mlfqs_update_recent_cpu (void) {
 	struct thread *t;
 	struct list_elem *t_all_elem;
-	int coefficient;
+	int64_t coefficient;
 
 	ASSERT (thread_mlfqs);
 	ASSERT (intr_context ());
@@ -675,21 +675,23 @@ mlfqs_update_recent_cpu (void) {
 				t_all_elem != list_end (&all_list);
 				t_all_elem = list_next (t_all_elem)) {
 			t = list_entry (t_all_elem, struct thread, all_elem);
-			coefficient = (2 * load_avg) / (2 * load_avg + 1); //////////////////////////////////fINISH FORMULA
-			t->recent_cpu = coefficient * t->recent_cpu + t->nice;
+			coefficient = (((int64_t)(2 * load_avg))*100) / (2 * load_avg + 1);
+			t->recent_cpu = (coefficient * t->recent_cpu) / 100 + t->nice * 100;
 		}
 	}
-	ASSERT (0); //////////////////////////////////////////////////////////////////////////////////////////remove when done
 }
 
 /* Updates the global variable load_avg (mlfqs). */
 static void
 mlfqs_update_load_avg (void) {
+	int64_t temp;
+
 	ASSERT (thread_mlfqs);
 	ASSERT (intr_context ());
 
-	load_avg = (59/60) * load_avg + (1/60) * (int)list_size (&ready_list); //////////////////////////////////fINISH FORMULA
-	ASSERT (0); //////////////////////////////////////////////////////////////////////////////////////////remove when done
+	temp = ((int64_t)(5900/60) * load_avg) / 100;
+	temp += ((int64_t)(100/60)*((uint64_t)list_size (&ready_list)*100))/100;
+	load_avg = (int)temp;
 }
 
 /* Chooses and returns the next thread to be scheduled.  Should
