@@ -194,7 +194,7 @@ thread_tick (void) {
 			t->recent_cpu++;
 		if (timer_ticks () % TIMER_FREQ == 0) {
 			mlfqs_update_recent_cpu ();
-			//mlfqs_update_load_avg ();
+			mlfqs_update_load_avg ();
 		}
 	}
 	/* Enforce preemption. */
