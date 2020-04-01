@@ -1,4 +1,5 @@
 #include "threads/fpa.h"
+#include <stddef.h>
 
 /* Integer to fixed point */
 int n_to_fp (int n) {
