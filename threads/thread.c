@@ -183,12 +183,7 @@ thread_tick (void) {
 	wake_up_threads ();
 	if (thread_mlfqs) {
 		//Update all threads' priorities every fourth tick
-		ASSERT (priority_ticks <= 4 && priority_ticks >= 0);
-		if (priority_ticks == 4) {
-			priority_ticks = 0;
-			mlfqs_update_priorities ();
-		} else
-			priority_ticks++;
+		ASSERT (priority_ticks <= 3 && priority_ticks >= 0);
 		//Update recent_cpu values and load_avg
 		if (t != idle_thread)
 			t->recent_cpu += 100;
@@ -196,6 +191,11 @@ thread_tick (void) {
 			mlfqs_update_recent_cpu ();
 			mlfqs_update_load_avg ();
 		}
+		if (priority_ticks == 3) {
+			priority_ticks = 0;
+			mlfqs_update_priorities ();
+		} else
+			priority_ticks++;
 	}
 	/* Enforce preemption. */
 	if (++thread_ticks >= TIME_SLICE)
