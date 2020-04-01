@@ -290,10 +290,7 @@ thread_unblock (struct thread *t) {
 
 	old_level = intr_disable ();
 	ASSERT (t->status == THREAD_BLOCKED);
-	if (thread_mlfqs)
-		list_insert_ordered (&ready_list, &t->elem, &compare_priorities, NULL);
-	else
-		list_push_back (&ready_list, &t->elem);
+	list_push_back (&ready_list, &t->elem);
 	t->status = THREAD_READY;
 	intr_set_level (old_level);
 	if (t->priority > thread_current ()->priority &&
@@ -369,13 +366,8 @@ thread_yield (void) {
 	ASSERT (!intr_context ());
 
 	old_level = intr_disable ();
-	if (curr != idle_thread) {
-		if (thread_mlfqs)
-			list_insert_ordered (&ready_list, &curr->elem, &compare_priorities,
-					NULL);
-		else
-			list_push_back (&ready_list, &curr->elem);
-	}
+	if (curr != idle_thread)
+		list_push_back (&ready_list, &curr->elem);
 	do_schedule (THREAD_READY);
 	intr_set_level (old_level);
 }
@@ -665,8 +657,6 @@ mlfqs_update_priorities (void) {
 			t = list_entry (t_all_elem, struct thread, all_elem);
 			t->priority = mlfqs_calculate_priority (t);
 		}
-		//Sort the list again after updating the priorities
-		list_sort (&all_list, &compare_priorities, NULL);
 	}
 }
 
