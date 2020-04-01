@@ -191,7 +191,7 @@ thread_tick (void) {
 			priority_ticks++;
 		//Update recent_cpu values and load_avg
 		if (t != idle_thread)
-			t->recent_cpu++;
+			t->recent_cpu += 100;
 		if (timer_ticks () % TIMER_FREQ == 0) {
 			mlfqs_update_recent_cpu ();
 			mlfqs_update_load_avg ();
