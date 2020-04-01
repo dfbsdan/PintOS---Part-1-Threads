@@ -10,6 +10,7 @@
 #include "threads/palloc.h"
 #include "threads/synch.h"
 #include "threads/vaddr.h"
+#include "threads/fpa.h"
 #include "intrinsic.h"
 #include "devices/timer.h"
 #ifdef USERPROG
