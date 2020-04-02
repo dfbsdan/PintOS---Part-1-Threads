@@ -295,8 +295,12 @@ thread_unblock (struct thread *t) {
 	t->status = THREAD_READY;
 	intr_set_level (old_level);
 	if (t->priority > thread_current ()->priority &&
-			thread_current () != idle_thread)
-		thread_yield ();
+			thread_current () != idle_thread) {
+		if (intr_context ()) //Waking up sleeping threads (alarm)
+			intr_yield_on_return ();
+		else
+			thread_yield ();
+	}
 }
 
 /* Adds current thread to the sleep_list and blocks it.
