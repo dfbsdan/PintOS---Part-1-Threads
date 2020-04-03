@@ -64,31 +64,17 @@ sub check_for_panic {
 
     my (@stack_line) = grep (/Call stack:/, @output);
     if (@stack_line != 0) {
-	my ($addrs) = $stack_line[0] =~ /Call stack:((?: 0x[0-9a-f]+)+)/;
+	     my ($addrs) = $stack_line[0] =~ /Call stack:((?: 0x[0-9a-f]+)+)/;
 
-	# Find a user program to translate user virtual addresses.
-	my ($userprog) = "";
-	$userprog = "$test"
-	  if grep (hex ($_) < 0xc0000000, split (' ', $addrs)) > 0 && -e $test;
-
-	# Get and print the backtrace.
-	my ($trace) = scalar (`backtrace kernel.o $userprog $addrs`);
-	print "Call stack:$addrs\n";
-	print "Translation of call stack:\n";
-	print $trace;
-
-	# Print disclaimer.
-	if ($userprog ne '' && index ($trace, $userprog) >= 0) {
-	    print <<EOF;
-Translations of user virtual addresses above are based on a guess at
-the binary to use.  If this guess is incorrect, then those
-translations will be misleading.
-EOF
-	}
+       # Get and print the backtrace.
+       my ($trace) = scalar (`backtrace $addrs`);
+       print "Call stack:$addrs\n";
+       print "Translation of call stack:\n";
+       print $trace;
     }
 
     if ($panic =~ /sec_no \< d-\>capacity/) {
-	print <<EOF;
+	     print <<EOF;
 \nThis assertion commonly fails when accessing a file via an inode that
 has been closed and freed.  Freeing an inode clears all its sector
 indexes to 0xcccccccc, which is not a valid sector number for disks
@@ -101,7 +87,7 @@ EOF
 
 sub check_for_keyword {
     my ($run, $keyword, @output) = @_;
-    
+
     my ($kw_line) = grep (/$keyword/, @output);
     return unless defined $kw_line;
 
