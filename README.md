@@ -1,4 +1,4 @@
-### Pintos - Part 1: Threads
+## Pintos - Part 1: Threads Implementation
 
 Brand new pintos for Operating Systems and Lab (CS330), KAIST, by Youngjin Kwon.
 
